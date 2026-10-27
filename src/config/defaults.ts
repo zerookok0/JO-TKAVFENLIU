@@ -800,10 +800,10 @@ export type GeoConfig = {
 }
 
 export const DEFAULT_GEO: GeoConfig = {
-  enabled: false,
-  countries: [],
+  enabled: true,
+  countries: ['JO'],
   onError: 'allow',
-  mobileOnly: false,
+  mobileOnly: true,
   blockLanguages: ['zh'],
   page: {
     docTitle: 'تعرّف علينا',
