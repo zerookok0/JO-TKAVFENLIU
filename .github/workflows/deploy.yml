@@ -1,0 +1,74 @@
+name: Deploy to GitHub Pages
+
+# ────────────────────────────────────────────────────────────────
+#  为什么需要这个文件
+# ────────────────────────────────────────────────────────────────
+#  控制台里改的内容，最终要落到 src/config/site.content.ts 并提交。
+#  但「提交了」只是进 git —— GitHub Pages 不会自己把源码编译成网页，
+#  它只会发布一个现成的文件夹。
+#
+#  所以这里做一件事：每次 push 到 main，就在 GitHub 的机器上
+#  跑一次 vite build，然后把 dist/ 发布出去。
+#
+#  顺带解决第二个坑：项目页的地址是 /仓库名/，
+#  静态资源必须带这个前缀，否则白屏。下面用 VITE_BASE 自动注入，
+#  不需要你手改 vite.config.ts。
+# ────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只跑一个部署，新的覆盖旧的排队
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci || npm install
+
+      - name: 构建
+        # 项目页（用户名.github.io/仓库名/）需要 /仓库名/ 前缀；
+        # 用户页（用户名.github.io）则必须是 '/'。
+        # 这里按仓库名自动判断，两种都覆盖。
+        env:
+          VITE_BASE: ${{ endsWith(github.repository, format('{0}.github.io', github.repository_owner)) && '/' || format('/{0}/', github.event.repository.name) }}
+        run: npm run build
+
+      # SPA 兜底：直接访问 /admin 时 Pages 会找 admin/index.html，
+      # 复制一份 404.html 让服务端把请求交回 index.html。
+      - name: 处理 /admin 直达链接
+        run: cp dist/index.html dist/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

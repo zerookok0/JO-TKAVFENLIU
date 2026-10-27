@@ -1,0 +1,363 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+
+    /* 主题色：运行时由控制台覆盖（见 ConfigProvider → themeVars）
+       每个色给两份：hex 用于直接取值，rgb 通道用于 /55 这类透明度修饰 */
+    --c-bg: #0a0607;
+    --c-bg-rgb: 10 6 7;
+    --c-surface: #120d0f;
+    --c-surface-rgb: 18 13 15;
+    --c-raised: #1b1416;
+    --c-raised-rgb: 27 20 22;
+    --c-line: #2a1e21;
+    --c-line-rgb: 42 30 33;
+    --c-muted: #a08f91;
+    --c-muted-rgb: 160 143 145;
+    --c-text: #f6ebe0;
+    --c-text-rgb: 246 235 224;
+    --c-blush: #e9a9a1;
+    --c-blush-rgb: 233 169 161;
+    --c-copper: #c08a5c;
+    --c-copper-rgb: 192 138 92;
+    --c-wine: #7c1b2c;
+    --c-wine-rgb: 124 27 44;
+    --c-wine-deep: #4a0e1a;
+    --c-wine-deep-rgb: 74 14 26;
+    --c-mint: #e7c79b;
+    --c-mint-rgb: 231 199 155;
+
+    --brand: 124 27 44;
+    --accent: 233 169 161;
+    --copper: 192 138 92;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    background: #0a0607;
+  }
+
+  body {
+    @apply bg-ink font-sans text-cream antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: rgba(124, 27, 44, 0.55);
+    color: #f6ebe0;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 3px;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0d0809;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #35262a;
+    border-radius: 999px;
+    border: 2px solid #0d0809;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4d3538;
+  }
+
+  /* 所有大标题走衬线体 */
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+    font-feature-settings: 'palt' 1;
+  }
+
+  /* ── 阿拉伯语 ──
+     阿语字母上下都有附加符号，中文用的行高会挤在一起，
+     而且 Noto Serif SC 没有阿语字形，会掉到系统字体上。
+     所以整站换成 Noto Sans Arabic，并把行高放宽一点。 */
+  html[lang='ar'] body {
+    font-family: 'Noto Sans Arabic', 'Inter', system-ui, sans-serif;
+  }
+
+  /* 标题也要走阿语字面：.font-display 是西文衬线，阿语会落到系统默认字体上 */
+  html[lang='ar'] h1,
+  html[lang='ar'] h2,
+  html[lang='ar'] h3,
+  html[lang='ar'] h4 {
+    font-family: 'Noto Sans Arabic', 'Inter', system-ui, sans-serif;
+    font-feature-settings: normal;
+    line-height: 1.55;
+  }
+
+  html[lang='ar'] p,
+  html[lang='ar'] li,
+  html[lang='ar'] span,
+  html[lang='ar'] a,
+  html[lang='ar'] button {
+    line-height: 1.85;
+  }
+
+  /* 阿语没有大小写，uppercase 只是空操作，但会让人误以为有效果 */
+  html[lang='ar'] .eyebrow,
+  html[lang='ar'] .tracking-wider-cn {
+    text-transform: none;
+    letter-spacing: 0.01em;
+  }
+}
+
+/* ── 阿语连写：不许有字距 ──
+   阿拉伯字母是连写的，一旦加了 letter-spacing，
+   「نايتايل」会被拆成互不相连的孤立字母 —— 不是难看，是直接读不出来。
+
+   Tailwind v3 的 tracking-* 直接输出 letter-spacing 字面量（不是变量），
+   所以只能在这里统一点掉。写在 @layer 外面：
+   未分层的声明优先于所有 @layer（含 utilities），
+   组件里的 tracking-[0.3em] 在阿语下自动失效，英文完全不受影响。 */
+html[lang='ar'],
+html[lang='ar'] :where(*) {
+  letter-spacing: normal !important;
+}
+
+/* 字距归零后，全大写留下的空档会显得松散，一并关掉 */
+html[lang='ar'] .eyebrow {
+  text-transform: none;
+  font-weight: 600;
+}
+
+/* ── 方向性图标镜像 ──
+   阿语从右往左读，箭头也要跟着反过来：
+   「→ 下一步」在阿语里必须朝左，否则整条动线是反的。
+
+   用独立的 scale 属性而不是 transform：
+   transform 会被 Tailwind 的 translate / group-hover 动画整个覆盖，
+   而 scale 是另一条属性，两者互不干扰。
+   lucide-react 会给每个图标挂 lucide-<name> 类，这里按名字点。 */
+html[dir='rtl'] .lucide-arrow-right,
+html[dir='rtl'] .lucide-arrow-up-right,
+html[dir='rtl'] .lucide-chevron-right,
+html[dir='rtl'] .lucide-arrow-left,
+html[dir='rtl'] .lucide-chevron-left {
+  scale: -1 1;
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-[1180px] px-5 sm:px-8;
+  }
+
+  .glass {
+    background: rgba(22, 15, 17, 0.72);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    border: 1px solid rgba(246, 235, 224, 0.07);
+  }
+
+  .card {
+    @apply rounded-3xl border border-cream/[0.07] bg-surface/70;
+  }
+
+  .text-gradient {
+    background-image: linear-gradient(
+      98deg,
+      rgb(var(--c-text-rgb)) 4%,
+      rgb(var(--c-blush-rgb)) 34%,
+      rgb(var(--c-copper-rgb)) 68%,
+      rgb(var(--c-wine-rgb)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-warm {
+    background-image: linear-gradient(
+      96deg,
+      rgb(var(--c-blush-rgb)) 0%,
+      rgb(var(--c-copper-rgb)) 52%,
+      rgb(var(--c-text-rgb)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-cream px-7 py-4 text-[15px] font-semibold tracking-wide text-[#17090c] transition duration-200 hover:shadow-[0_18px_50px_-16px_rgba(246,235,224,0.4)] active:scale-[0.97];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-cream/15 bg-cream/[0.035] px-6 py-4 text-[14px] font-medium text-cream/75 transition duration-200 hover:border-cream/30 hover:bg-cream/[0.07] hover:text-cream active:scale-[0.97];
+  }
+
+  .btn-brand {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-wine via-wine to-copper px-6 py-3.5 text-[14px] font-semibold text-cream shadow-glow transition duration-200 hover:brightness-110 active:scale-[0.98];
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-cream/10 bg-cream/[0.04] px-3 py-1 text-[11px] font-medium text-cream/55;
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-medium uppercase tracking-[0.34em] text-copper/70;
+  }
+
+  /* 细酒红分隔线 */
+  .hairline {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(192, 138, 92, 0.28),
+      rgba(233, 169, 161, 0.12),
+      transparent
+    );
+  }
+
+  .noise-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+  }
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 深夜胶片边角 */
+  .vignette {
+    background: radial-gradient(ellipse at center, transparent 42%, rgba(6, 3, 4, 0.72) 100%);
+  }
+}
+
+@layer utilities {
+  .reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+      opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .snap-y-mandatory {
+    scroll-snap-type: y mandatory;
+  }
+  .snap-start-always {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .tracking-wider-cn {
+    letter-spacing: 0.18em;
+  }
+}
+
+/* 第 1 屏轮播进度条 */
+@keyframes hero-bar {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+/* 第 1 屏轮播进/出 */
+@keyframes hero-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-anim {
+  animation: hero-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* AI 变声器波形 */
+@keyframes pulse-bar {
+  0% {
+    transform: scaleY(0.45);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+/* 聊天逐条浮现 */
+@keyframes msg-in {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.msg-in {
+  animation: msg-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 呼吸光晕 */
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.68;
+    transform: scale(1.06);
+  }
+}
+
+.animate-breathe {
+  animation: breathe 7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
