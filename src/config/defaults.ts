@@ -62,7 +62,7 @@ export const DEFAULT_DOWNLOAD: DownloadConfig = {
   version: '2.4.1',
   size: '45 ميجابايت',
   minAndroid: 'أندرويد 8.0 أو أحدث',
-  pixelId: '',
+  pixelId: '1421064512924307',
 }
 
 /* ══════════════════════════ 色彩 ══════════════════════════ */
