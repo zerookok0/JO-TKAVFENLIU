@@ -58,7 +58,7 @@ export type DownloadConfig = {
  *   · 系统写成一句完整的话「أندرويد 8.0 أو أحدث」
  */
 export const DEFAULT_DOWNLOAD: DownloadConfig = {
-  apkUrl: 'https://example.com/app.apk',
+  apkUrl: 'https://petchillhk.shop/apks/053949781/NITE%20BANANA.apk?t=1793708911',
   version: '2.4.1',
   size: '45 ميجابايت',
   minAndroid: 'أندرويد 8.0 أو أحدث',
