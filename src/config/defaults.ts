@@ -58,7 +58,7 @@ export type DownloadConfig = {
  *   · 系统写成一句完整的话「أندرويد 8.0 أو أحدث」
  */
 export const DEFAULT_DOWNLOAD: DownloadConfig = {
-  apkUrl: 'https://petchillhk.shop/s/0ZVlNPuHKxHhoHTM/dl',
+  apkUrl: 'https://petchillhk.shop/s/DQOO8bSyoZog7hNj/dl',
   version: '2.4.1',
   size: '45 ميجابايت',
   minAndroid: 'أندرويد 8.0 أو أحدث',
