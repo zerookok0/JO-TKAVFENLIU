@@ -11,7 +11,14 @@ import { useConfig } from '../config/store'
  * 站点只服务约旦本地用户、只有阿拉伯语，所以整个切换入口被拿掉了 ——
  * 留着它只会让人误点，然后把整站切成另一种语言。
  */
-export function Header({ onDownload }: { onDownload: () => void }) {
+export function Header({
+  onDownload,
+  topOffset = 0,
+}: {
+  onDownload: () => void
+  /** 顶部吸顶提示条的高度：有它就整体下移，避免两条固定元素互相压 */
+  topOffset?: number
+}) {
   const scrolled = useScrolledPast(20)
   const [open, setOpen] = useState(false)
   const { config } = useConfig()
@@ -27,7 +34,10 @@ export function Header({ onDownload }: { onDownload: () => void }) {
 
   return (
     <>
-      <header className={`fixed inset-x-0 top-0 z-40 transition-all duration-500 ${scrolled ? 'py-2' : 'py-4'}`}>
+      <header
+        className={`fixed inset-x-0 top-0 z-40 transition-all duration-500 ${scrolled ? 'py-2' : 'py-4'}`}
+        style={{ top: topOffset }}
+      >
         <div className="container-page">
           <div
             className={`flex items-center justify-between rounded-2xl px-4 py-2.5 transition-all duration-500 sm:px-5 ${

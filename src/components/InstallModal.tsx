@@ -11,6 +11,8 @@ import {
   X,
 } from 'lucide-react'
 import { useConfig } from '../config/store'
+import { InAppBanner } from './InAppBanner'
+import { detectInAppBrowser, type InAppFamily } from '../lib/inApp'
 
 type Props = {
   open: boolean
@@ -26,6 +28,15 @@ export function InstallModal({ open, onClose, onConfirm }: Props) {
   const ui = config.ui
   const [mounted, setMounted] = useState(open)
   const closeRef = useRef<HTMLButtonElement | null>(null)
+
+  /**
+   * 当前是不是在 FB / IG / TikTok 的内置浏览器里。
+   *
+   * 只在首次渲染算一次：UA 在一次会话里不会变，
+   * 每次重渲染都跑一遍正则没意义。
+   * 想本地看效果，网址加 ?iab=fb 强制成 Facebook 内置浏览器。
+   */
+  const [inApp] = useState<InAppFamily>(() => detectInAppBrowser())
 
   /** 进入/退出动画 */
   useEffect(() => {
@@ -191,6 +202,14 @@ export function InstallModal({ open, onClose, onConfirm }: Props) {
             ))}
           </ul>
         </div>
+
+        {/*
+          内嵌浏览器提示条。
+          位置是刻意的：贴在「开始下载」按钮正上方 ——
+          用户的手指已经在往这里走了，这句话才有人看。
+          放顶部会被当成广告滑过去。
+        */}
+        {inApp && <InAppBanner family={inApp} />}
 
         {/* 底部操作区 */}
         <div className="border-t border-white/[0.07] bg-[#17171A] px-5 pb-[max(16px,env(safe-area-inset-bottom))] pt-3.5 sm:px-7 sm:pb-5">

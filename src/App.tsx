@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { AmbientLayer } from './components/AmbientLayer'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
@@ -6,6 +6,7 @@ import { Highlights, HowItWorks } from './components/Highlights'
 import { InstallSection } from './components/InstallSection'
 import { Footer, MobileDock } from './components/Footer'
 import { InstallModal } from './components/InstallModal'
+import { InAppTopBar } from './components/InAppTopBar'
 import { Nearby } from './components/Nearby'
 import { NightChat } from './components/NightChat'
 import { GeoGate } from './components/GeoGate'
@@ -14,6 +15,7 @@ import { initPixel, resetInnerGuard, trackInnerAndGo, trackOuter } from './lib/p
 import { ConfigProvider, themeVars, useConfig } from './config/store'
 import { DIR, HTML_LANG } from './config/locale'
 import { isAdminRoute } from './lib/adminRoute'
+import { detectInAppBrowser } from './lib/inApp'
 import type { GateKey } from './config/defaults'
 
 /**
@@ -34,6 +36,40 @@ function Site() {
   useReveal()
   const { config } = useConfig()
   const [sheetOpen, setSheetOpen] = useState(false)
+
+  /**
+   * 内嵌浏览器（FB / IG）吸顶提示。
+   *
+   * 出现的条件只有一个：UA 认出是内置浏览器，且用户没手动关掉。
+   * 关掉之后本页不再烦他 —— 下载弹窗里还有.one 次同样的提醒兜底。
+   *
+   * 高度必须实测，不能写死：文案换行、复制失败时多出来的那行链接、
+   * 系统字体放大，都会改变它的真实高度。下面的内容区和 Header
+   * 全都按这个值让位，才谈得上「不挤」。
+   */
+  const [inApp] = useState(() => detectInAppBrowser())
+  const [barClosed, setBarClosed] = useState(false)
+  const barRef = useRef<HTMLDivElement | null>(null)
+  const [barHeight, setBarHeight] = useState(0)
+
+  const showBar = Boolean(inApp) && !barClosed
+
+  useEffect(() => {
+    if (!showBar) {
+      setBarHeight(0)
+      return
+    }
+    const el = barRef.current
+    if (!el) return
+
+    const sync = () => setBarHeight(el.offsetHeight)
+    sync()
+
+    /* 条内部的高度会变（复制失败时多一行链接），跟着它走 */
+    const observer = new ResizeObserver(sync)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [showBar])
 
   /**
    * 语言与方向钉死在阿拉伯语。
@@ -109,7 +145,19 @@ function Site() {
   } as const
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-ink">
+    <div
+      className="relative min-h-screen overflow-x-hidden bg-ink"
+      /* 吸顶条占掉的真实高度 —— 整页内容从这里开始，不压在条下面 */
+      style={barHeight ? { paddingTop: barHeight } : undefined}
+    >
+      {showBar && (
+        <InAppTopBar
+          ref={barRef}
+          family={inApp}
+          onClose={() => setBarClosed(true)}
+        />
+      )}
+
       {/* 滚动进度只影响这一层，不带着整页重渲染 */}
       <AmbientLayer />
 
@@ -120,7 +168,7 @@ function Site() {
         {config.ui.skipToContent}
       </a>
 
-      <Header onDownload={() => openSheet(DOWNLOAD_SOURCES.header)} />
+      <Header topOffset={barHeight} onDownload={() => openSheet(DOWNLOAD_SOURCES.header)} />
 
       {/* 动线：看视频（第 1 屏）→ 看附近的人（第 2 屏）→ 开始聊天（第 3 屏） */}
       <main>

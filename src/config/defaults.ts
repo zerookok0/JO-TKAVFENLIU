@@ -216,6 +216,23 @@ export type UiCopy = {
   metaVersion: string
   metaSize: string
   metaSystem: string
+
+  /* 内嵌浏览器引导（在 FB / IG / TikTok 里打开时，弹窗内那条提示） */
+  /** 标题，{app} 会替换成「فيسبوك / إنستغرام …」 */
+  inAppTitle: string
+  /** 标题下面那行操作指引 */
+  inAppHint: string
+  /** 首屏卡片上那句更短的说明 */
+  inAppHeroHint: string
+  inAppOpen: string
+  /** 首屏卡片上的按钮（比弹窗里的短，一行放得下） */
+  inAppHeroOpen: string
+  inAppCopy: string
+  /** 复制成功后的反馈（同时兼作「自动打开失败」的兜底说明） */
+  inAppCopied: string
+  /** 剪贴板被拒时的兜底：把链接摆出来让人自己长按复制 */
+  inAppManual: string
+  inAppOpening: string
 }
 
 export const DEFAULT_UI: UiCopy = {
@@ -279,6 +296,24 @@ export const DEFAULT_UI: UiCopy = {
   metaVersion: 'الإصدار',
   metaSize: 'الحجم',
   metaSystem: 'النظام',
+
+  /*
+   * 内嵌浏览器引导。
+   *
+   * 为什么这几句必须写在这里、而不是写死在组件里：
+   * FB / IG 的「⋯」按钮位置和措辞会变（有时在右上，有时要往下翻），
+   * 官方话术也各版本不同。留成字段，你发现哪句不准，改这一处就行，
+   * 不用重新读组件代码 —— 而这句写错，用户就卡在弹窗里出不去。
+   */
+  inAppTitle: 'أنت داخل {app} — التنزيل لا يعمل من هنا',
+  inAppHint: 'اضغط «⋯» أعلى الشاشة ثم اختر «فتح في المتصفح»، أو جرّب الأزرار تحت.',
+  inAppHeroHint: 'افتح الصفحة في متصفح هاتفك، وهناك يبدأ التثبيت مباشرة.',
+  inAppOpen: 'حاول الفتح تلقائيًا',
+  inAppHeroOpen: 'افتح في المتصفح',
+  inAppCopy: 'انسخ الرابط',
+  inAppCopied: 'تم نسخ الرابط — الصقه في متصفح هاتفك',
+  inAppManual: 'اضغط على الرابط تحت مطوّلًا ثم «نسخ»، والصقه في متصفح هاتفك.',
+  inAppOpening: 'جارٍ الفتح…',
 }
 
 /* ══════════════════════════ 首屏 ══════════════════════════ */
